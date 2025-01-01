@@ -2,7 +2,7 @@
 #include "raylib.h"
 
 uint32_t xorshift32State = 2463534242;
-uint32_t XORShift32(uint32_t *state){
+uint32_t XORShift32(uint32_t *state){ //Randomizer
 	uint32_t x = *state;
 	x ^= x << 13;
 	x ^= x >> 17;
@@ -17,51 +17,49 @@ Vector2 GenerateRandomPoint(const uint32_t windowSize){
     return point;
 }
 
-uint32_t ThrowDice(void){
-    return XORShift32(&xorshift32State) % 5;
+uint32_t RandomVertex(void){
+    return XORShift32(&xorshift32State) % 3;
 }
 
 void DrawSierpinskiTriangles(const uint32_t windowSize, const Color *backgroundColor){
-    const Color pointColor = {216, 162, 94};
-    const float pointRadiusPixels = 3.0;
-    const Vector2 pointA = {(int)windowSize / 2, (int)(0.15 * windowSize)};
-    const Vector2 pointB = {(int)(0.15 * windowSize), (int)(windowSize - 0.15 * windowSize)};
-    const Vector2 pointC = {(int)(windowSize - 0.15 * windowSize), (int)(windowSize - 0.15 * windowSize)};
+    const float triangleScale = 0.1; //Gap between triangle vertices and window sides (%)
+    const float pointRadiusPixels = 1.0;
+    const Color pointColor = {216, 162, 94, 255};
+    const Vector2 verticesABC[3] = {{(int)windowSize / 2, (int)(triangleScale * windowSize)},
+                                   {(int)(triangleScale * windowSize), (int)(windowSize - triangleScale * windowSize)},
+                                   {(int)(windowSize - triangleScale * windowSize), (int)(windowSize - triangleScale * windowSize)}};
+    Vector2 pointToDraw = {(int)windowSize / 2, (int)windowSize / 2};
 
-    while (!WindowShouldClose && !IsKeyPressed(KEY_SPACE)){
-        const Vector2 generatedPoint = GenerateRandomPoint(windowSize);
-        const uint32_t numberOnDice = ThrowDice();
-        Vector2 centerPoint;
+    RenderTexture2D canvas = LoadRenderTexture(windowSize, windowSize);
+    BeginTextureMode(canvas);
+    ClearBackground(*backgroundColor);
+    EndTextureMode();
 
-        switch (numberOnDice){
-        case 1:
-        case 2:
-            centerPoint.x = (int)(generatedPoint.x + pointA.x) / 2;
-            centerPoint.y = (int)(generatedPoint.y + pointA.y) / 2;
-            break;
-        case 3:
-        case 4:
-            centerPoint.x = (int)(generatedPoint.x + pointB.x) / 2;
-            centerPoint.y = (int)(generatedPoint.y + pointB.y) / 2;
-            break;
-        case 5:
-        case 6:
-            centerPoint.x = (int)(generatedPoint.x + pointC.x) / 2;
-            centerPoint.y = (int)(generatedPoint.y + pointC.y) / 2;
-            break;
-        }
+    while (!WindowShouldClose() && !IsKeyPressed(KEY_SPACE)){
+        const Vector2 vertex = verticesABC[RandomVertex()];
 
-        DrawCircle(centerPoint.x, centerPoint.y, pointRadiusPixels, pointColor);
-        if (IsKeyPressed(KEY_R)) ClearBackground(*backgroundColor);
+        pointToDraw.x = (int)(pointToDraw.x + vertex.x) / 2;
+        pointToDraw.y = (int)(pointToDraw.y + vertex.y) / 2;
+
+        BeginTextureMode(canvas);
+            DrawCircle(pointToDraw.x, pointToDraw.y, pointRadiusPixels, pointColor);
+            if (IsKeyPressed(KEY_R)) ClearBackground(*backgroundColor);
+        EndTextureMode();
+
+        BeginDrawing();
+            ClearBackground(*backgroundColor);
+            DrawTextureRec(canvas.texture, (Rectangle) { 0, 0, (float)canvas.texture.width, (float)-canvas.texture.height }, (Vector2) { 0, 0 }, WHITE);
+        EndDrawing();
     }
     
+    UnloadRenderTexture(canvas);
 }
 
 int main(void){
-    const uint32_t windowSize = 0.7 * GetScreenWidth() <= GetScreenHeight() ? 0.7 * GetScreenWidth() : 0.8 * GetScreenHeight();
+    const uint32_t windowSize = 650/*0.7 * GetScreenWidth() <= GetScreenHeight() ? 0.7 * GetScreenWidth() : 0.8 * GetScreenHeight()*/;
     const Color backgroundColor = {52, 49, 49};
     InitWindow(windowSize, windowSize, "Fractals");
-    SetTargetFPS(60);
+    SetTargetFPS(240);
     
     while (!WindowShouldClose()){
         DrawSierpinskiTriangles(windowSize, &backgroundColor);
