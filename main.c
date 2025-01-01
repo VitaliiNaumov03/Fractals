@@ -1,6 +1,8 @@
 #include <stdint.h>
 #include "raylib.h"
 
+#define SQRT3 1.73205080757
+
 uint32_t xorshift32State = 2463534242;
 uint32_t XORShift32(uint32_t *state){ //Randomizer
 	uint32_t x = *state;
@@ -22,23 +24,26 @@ uint32_t RandomVertex(void){
 }
 
 void DrawSierpinskiTriangles(const uint32_t windowSize, const Color *backgroundColor){
-    const float triangleScale = 0.1; //Gap between triangle vertices and window sides (%)
-    const float pointRadiusPixels = 1.0;
+    const float pointRadiusPixels = 1.0f;
     const Color pointColor = {216, 162, 94, 255};
-    const Vector2 verticesABC[3] = {{(int)windowSize / 2, (int)(triangleScale * windowSize)},
-                                   {(int)(triangleScale * windowSize), (int)(windowSize - triangleScale * windowSize)},
-                                   {(int)(windowSize - triangleScale * windowSize), (int)(windowSize - triangleScale * windowSize)}};
     Vector2 pointToDraw = {(int)windowSize / 2, (int)windowSize / 2};
 
+    const float triangleScale = 0.8f;
+    const uint32_t sideLength = triangleScale * ((2 * windowSize) / SQRT3);
+    const uint32_t height = (SQRT3 / 2) * sideLength;
+    const Vector2 verticesABC[3] = {{(int)windowSize / 2, (int)(windowSize - height) / 2},
+                                   {(int)(windowSize - sideLength) / 2, (int)(windowSize + height) / 2},
+                                   {(int)(windowSize + sideLength) / 2, (int)(windowSize + height) / 2}};
+    
     RenderTexture2D canvas = LoadRenderTexture(windowSize, windowSize);
     BeginTextureMode(canvas);
     ClearBackground(*backgroundColor);
     EndTextureMode();
 
     while (!WindowShouldClose() && !IsKeyPressed(KEY_SPACE)){
-        const Vector2 vertex = verticesABC[RandomVertex()];
+        const Vector2 vertex = verticesABC[RandomVertex()]; //Choose 1 of 3 triangle vertices
 
-        pointToDraw.x = (int)(pointToDraw.x + vertex.x) / 2;
+        pointToDraw.x = (int)(pointToDraw.x + vertex.x) / 2; //Calculate middle point between our start point and chosen vertex
         pointToDraw.y = (int)(pointToDraw.y + vertex.y) / 2;
 
         BeginTextureMode(canvas);
@@ -48,7 +53,7 @@ void DrawSierpinskiTriangles(const uint32_t windowSize, const Color *backgroundC
 
         BeginDrawing();
             ClearBackground(*backgroundColor);
-            DrawTextureRec(canvas.texture, (Rectangle) { 0, 0, (float)canvas.texture.width, (float)-canvas.texture.height }, (Vector2) { 0, 0 }, WHITE);
+            DrawTextureRec(canvas.texture, (Rectangle) { 0, 0, canvas.texture.width, -canvas.texture.height }, (Vector2) { 0, 0 }, WHITE);
         EndDrawing();
     }
     
@@ -57,9 +62,8 @@ void DrawSierpinskiTriangles(const uint32_t windowSize, const Color *backgroundC
 
 int main(void){
     const uint32_t windowSize = 650/*0.7 * GetScreenWidth() <= GetScreenHeight() ? 0.7 * GetScreenWidth() : 0.8 * GetScreenHeight()*/;
-    const Color backgroundColor = {52, 49, 49};
+    const Color backgroundColor = {52, 49, 49, 255};
     InitWindow(windowSize, windowSize, "Fractals");
-    SetTargetFPS(240);
     
     while (!WindowShouldClose()){
         DrawSierpinskiTriangles(windowSize, &backgroundColor);
