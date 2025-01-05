@@ -127,11 +127,15 @@ void DrawBarnsleyFern(const uint windowSize, const Color *backgroundColor, bool 
     UnloadRenderTexture(canvas);
 }
 
-uint ResizeWindow(const float widthCoefficient, const float heightCoefficient){
+uint ResizeWindow(const float widthCoefficient){
     const uint currentSize = GetScreenWidth();
     const uint monitorWidth = GetMonitorWidth(GetCurrentMonitor());
     const uint monitorHeight = GetMonitorHeight(GetCurrentMonitor());
-    const uint newSize = widthCoefficient * monitorWidth <= monitorHeight ? widthCoefficient * monitorWidth : heightCoefficient * monitorHeight;
+
+    const uint newWidth = widthCoefficient * monitorWidth;
+    const float heightCoefficient = (float)newWidth / (monitorWidth * 0.5625);
+    const uint newHeight = heightCoefficient * monitorHeight;
+    const uint newSize = newWidth <= monitorHeight ? newWidth : newHeight;
 
     SetWindowSize(newSize, newSize);
     SetWindowPosition((monitorWidth - newSize) / 2, (monitorHeight - newSize) / 2);
@@ -145,7 +149,7 @@ int main(void){
     bool showFPS = false;
     
     InitWindow(windowSize, windowSize, "Fractals");
-    windowSize = ResizeWindow(0.48, 0.85);
+    windowSize = ResizeWindow(0.44);
     
     while (!WindowShouldClose()){
         DrawSierpinskiTriangles(windowSize, &backgroundColor, &showFPS);
