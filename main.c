@@ -20,7 +20,7 @@ uint RandomIntFrom0To(const uint maxValue){
     return XORShift32(&xorshift32State) % (maxValue + 1);
 }
 
-void DrawSierpinskiTriangles(const uint windowSize, const Color *backgroundColor){
+void DrawSierpinskiTriangles(const uint windowSize, const Color *backgroundColor, bool *showFPS){
     //Point parameters
     const Color pointColor = {216, 162, 94, 255};
     Vector2 pointToDraw = {windowSize / 2.0f, windowSize / 2.0f};
@@ -33,8 +33,6 @@ void DrawSierpinskiTriangles(const uint windowSize, const Color *backgroundColor
                                    {(windowSize - sideLength) / 2.0f, (windowSize + height) / 2.0f},
                                    {(windowSize + sideLength) / 2.0f, (windowSize + height) / 2.0f}};
     
-    bool showFPS = false;
-
     //Create blank canvas
     RenderTexture2D canvas = LoadRenderTexture(windowSize, windowSize);
     BeginTextureMode(canvas);
@@ -58,17 +56,17 @@ void DrawSierpinskiTriangles(const uint windowSize, const Color *backgroundColor
         BeginDrawing();
             ClearBackground(*backgroundColor);
             DrawTextureRec(canvas.texture, (Rectangle) { 0, 0, canvas.texture.width, -canvas.texture.height }, (Vector2) { 0, 0 }, WHITE);
-            if (showFPS) DrawFPS(0, 0);
+            if (*showFPS) DrawFPS(0, 0);
         EndDrawing();
 
         if (IsKeyPressed(KEY_CHANGE_MODE)) break;
-        if (IsKeyPressed(KEY_FPS)) showFPS = !showFPS;
+        if (IsKeyPressed(KEY_FPS)) *showFPS = !*showFPS;
     }
     
     UnloadRenderTexture(canvas);
 }
 
-void DrawBarnsleyFern(const uint windowSize, const Color *backgroundColor){
+void DrawBarnsleyFern(const uint windowSize, const Color *backgroundColor, bool *showFPS){
     //Point parameters
     const Color pointColor = GREEN;
     float x = 0, y = 0; //Start point
@@ -81,7 +79,6 @@ void DrawBarnsleyFern(const uint windowSize, const Color *backgroundColor){
     const uint offsetY = windowSize - 0.05 * windowSize;
     
     uint randomValue;
-    bool showFPS = false;
 
     //Create blank canvas
     RenderTexture2D canvas = LoadRenderTexture(windowSize, windowSize);
@@ -120,17 +117,17 @@ void DrawBarnsleyFern(const uint windowSize, const Color *backgroundColor){
         BeginDrawing();
             ClearBackground(*backgroundColor);
             DrawTextureRec(canvas.texture, (Rectangle) { 0, 0, canvas.texture.width, -canvas.texture.height }, (Vector2) { 0, 0 }, WHITE);
-            if (showFPS) DrawFPS(0, 0);
+            if (*showFPS) DrawFPS(0, 0);
         EndDrawing();
 
         if (IsKeyPressed(KEY_CHANGE_MODE)) break;
-        if (IsKeyPressed(KEY_FPS)) showFPS = !showFPS;
+        if (IsKeyPressed(KEY_FPS)) *showFPS = !*showFPS;
     }
 
     UnloadRenderTexture(canvas);
 }
 
-void ResizeWindow(const float widthCoefficient, const float heightCoefficient){
+uint ResizeWindow(const float widthCoefficient, const float heightCoefficient){
     const uint currentSize = GetScreenWidth();
     const uint monitorWidth = GetMonitorWidth(GetCurrentMonitor());
     const uint monitorHeight = GetMonitorHeight(GetCurrentMonitor());
@@ -138,18 +135,21 @@ void ResizeWindow(const float widthCoefficient, const float heightCoefficient){
 
     SetWindowSize(newSize, newSize);
     SetWindowPosition((monitorWidth - newSize) / 2, (monitorHeight - newSize) / 2);
+
+    return newSize;
 }
 
 int main(void){
-    const uint windowSize = 650;
+    uint windowSize = 650;
     const Color backgroundColor = {52, 49, 49, 255};
+    bool showFPS = false;
     
     InitWindow(windowSize, windowSize, "Fractals");
-    ResizeWindow(0.48, 0.85);
+    windowSize = ResizeWindow(0.48, 0.85);
     
     while (!WindowShouldClose()){
-        DrawSierpinskiTriangles(windowSize, &backgroundColor);
-        DrawBarnsleyFern(windowSize, &backgroundColor);
+        DrawSierpinskiTriangles(windowSize, &backgroundColor, &showFPS);
+        DrawBarnsleyFern(windowSize, &backgroundColor, &showFPS);
     }
     
     CloseWindow();
