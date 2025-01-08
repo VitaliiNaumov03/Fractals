@@ -1,4 +1,5 @@
 #include "raylib.h"
+#include "icon.h"
 
 #define SQRT3 1.73205080757
 #define TRIANGLE_YELLOW CLITERAL(Color){216, 162, 94, 255}
@@ -164,6 +165,9 @@ int main(void){
     
     InitWindow(windowSize, windowSize, "Fractals");
     windowSize = ResizeWindow(0.44);
+    
+    Image icon = {ICON_DATA, ICON_WIDTH, ICON_HEIGHT, 1, ICON_FORMAT};
+    SetWindowIcon(icon);
     
     ShowControls(windowSize, &backgroundColor);
 
