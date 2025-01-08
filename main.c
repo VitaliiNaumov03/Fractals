@@ -1,6 +1,7 @@
 #include "raylib.h"
 
 #define SQRT3 1.73205080757
+#define TRIANGLE_YELLOW CLITERAL(Color){216, 162, 94, 255}
 #define KEY_CLEAR KEY_C
 #define KEY_CHANGE_MODE KEY_SPACE
 #define KEY_FPS KEY_F
@@ -20,9 +21,23 @@ uint RandomIntFrom0To(const uint maxValue){
     return XORShift32(&xorshift32State) % (maxValue + 1);
 }
 
+void ShowControls(const uint windowSize, const Color *backgroundColor){
+    const uint fontSize = 0.042 * windowSize;
+    const char *text = "Controls:\n\nC - clear screen\nF - show FPS\nSPACE - change mode\n\nPress SPACE to start";
+    const int textWidth = MeasureText(text, fontSize);
+
+    while (!WindowShouldClose()){
+        BeginDrawing();
+            ClearBackground(*backgroundColor);
+            DrawText(text, (windowSize - textWidth) / 2, (windowSize - fontSize * 7) / 2, fontSize, TRIANGLE_YELLOW);
+        EndDrawing();
+        if (IsKeyPressed(KEY_CHANGE_MODE)) break;
+    }
+}
+
 void DrawSierpinskiTriangles(const uint windowSize, const Color *backgroundColor, bool *showFPS){
     //Point parameters
-    const Color pointColor = {216, 162, 94, 255};
+    const Color pointColor = TRIANGLE_YELLOW;
     Vector2 pointToDraw = {windowSize / 2.0f, windowSize / 2.0f};
 
     //Triangle parameters
@@ -128,7 +143,6 @@ void DrawBarnsleyFern(const uint windowSize, const Color *backgroundColor, bool 
 }
 
 uint ResizeWindow(const float widthCoefficient){
-    const uint currentSize = GetScreenWidth();
     const uint monitorWidth = GetMonitorWidth(GetCurrentMonitor());
     const uint monitorHeight = GetMonitorHeight(GetCurrentMonitor());
 
@@ -151,6 +165,8 @@ int main(void){
     InitWindow(windowSize, windowSize, "Fractals");
     windowSize = ResizeWindow(0.44);
     
+    ShowControls(windowSize, &backgroundColor);
+
     while (!WindowShouldClose()){
         DrawSierpinskiTriangles(windowSize, &backgroundColor, &showFPS);
         DrawBarnsleyFern(windowSize, &backgroundColor, &showFPS);
