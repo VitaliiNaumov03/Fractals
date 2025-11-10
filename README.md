@@ -7,4 +7,8 @@ The more time you give it, the more detailed it will be.
 ### Barnsley&#39;s Fern
 ![2](https://github.com/user-attachments/assets/170447a9-59ef-4e9b-89de-c56bc0ef453a)
 ## Compiling
-To compile, add `-lraylib -lwinmm -mwindows` to compiler args.
+To build with MinGW (GCC), use this commands:
+```
+cmake -B build -S . -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+```

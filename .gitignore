@@ -1,5 +1,3 @@
-.vscode/*
+.vscode/
+build/
 *.exe
-*.png
-*.rc
-*.ico
