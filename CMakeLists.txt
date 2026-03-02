@@ -1,50 +1,81 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.11)
 project(Fractals LANGUAGES C)
 
-set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Debug)
-endif()
-
+# set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 
-set(RAYLIB_PATH "${CMAKE_SOURCE_DIR}/Raylib/")
-include_directories(${RAYLIB_PATH} Compiling)
-add_executable(${PROJECT_NAME} main.c Compiling/icon48.rc)
+find_package(raylib 5.0 QUIET)
+if (NOT raylib_FOUND)
+    include(FetchContent)
+
+    set(CUSTOMIZE_BUILD ON CACHE BOOL "" FORCE)
+    set(SUPPORT_MODULE_RMODELS OFF CACHE BOOL "" FORCE)
+    set(SUPPORT_MODULE_RAUDIO OFF CACHE BOOL "" FORCE)
+
+    FetchContent_Declare(
+        raylib
+        GIT_REPOSITORY https://github.com/raysan5/raylib.git
+        GIT_TAG 5.5
+    )
+
+    FetchContent_MakeAvailable(raylib)
+endif()
+
+include_directories(
+    Resources
+    Constants
+    XORShift32
+    Welcome
+    Multithread
+    Tree
+)
+
+set(SOURCES
+    main.c
+    "Welcome/welcome.c"
+    "Multithread/multithread.c"
+    "Tree/tree.c"
+)
+
+if(WIN32)
+    list(APPEND SOURCES "${CMAKE_SOURCE_DIR}/Resources/resources.rc")
+endif()
+
+add_executable(${PROJECT_NAME} ${SOURCES})
+target_link_libraries(${PROJECT_NAME} raylib)
+
+if (APPLE)
+    target_link_libraries(${PROJECT_NAME} "-framework IOKit")
+    target_link_libraries(${PROJECT_NAME} "-framework Cocoa")
+    target_link_libraries(${PROJECT_NAME} "-framework OpenGL")
+endif()
+
+#Release/Debug properties
+set_target_properties(${PROJECT_NAME} PROPERTIES 
+    WIN32_EXECUTABLE $<$<CONFIG:Release>:TRUE> #Disable console in Release build
+    OUTPUT_NAME_RELEASE "${PROJECT_NAME}"
+    OUTPUT_NAME_DEBUG   "${PROJECT_NAME} (DEBUG)"
+)
+
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
 
 #Compiler flags
 if(MSVC)
-    set(CMAKE_C_FLAGS_RELEASE "/O2 /Gy")
-    set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/INCREMENTAL:NO")
-elseif(CMAKE_C_COMPILER_ID MATCHES "Clang|GNU")
-    set(CMAKE_C_FLAGS_RELEASE "-s -O2 -Wall")
-    set(CMAKE_C_FLAGS_DEBUG "-Og -g")
-endif()
-
-#Exe name & console disabling
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    set_target_properties(${PROJECT_NAME} PROPERTIES
-        OUTPUT_NAME "${PROJECT_NAME}"
-        WIN32_EXECUTABLE TRUE
+    target_compile_options(${PROJECT_NAME} PRIVATE 
+        /W4
+        $<$<CONFIG:Release>:
+            /Os
+        >
     )
 else()
-    set_target_properties(${PROJECT_NAME} PROPERTIES
-        OUTPUT_NAME "${PROJECT_NAME} (DEBUG)"
-        WIN32_EXECUTABLE FALSE
+    target_compile_options(${PROJECT_NAME} PRIVATE 
+        -Wall
+        $<$<CONFIG:Release>:
+            -Os
+        >
     )
 endif()
-
-#Linking raylib
-find_library(RAYLIB_LIBRARY
-    NAMES raylib libraylib
-    PATHS ${RAYLIB_PATH}
-    NO_DEFAULT_PATH
-)
-
-if(NOT RAYLIB_LIBRARY)
-    message(FATAL_ERROR "Raylib was not found in \"${RAYLIB_PATH}\"")
-endif()
-
-target_link_libraries(${PROJECT_NAME} PRIVATE ${RAYLIB_LIBRARY} winmm)
