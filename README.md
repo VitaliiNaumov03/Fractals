@@ -1,14 +1,16 @@
 ## About
-This program visualizes Sierpiński&#39;s triangle and Barnsley&#39;s Fern by calculating and drawing each point in real-time, so you can see how these fractals appear out of nothing before your eyes.
-## Results
-The more time you give it, the more detailed it will be.
+This program draws the Sierpinski triangle and the Barnsley fern by calculating and displaying each point in real time and visualizing chaos theory.
+
+**New fractal in v2.0:** Pythagoras' tree, in which you can change the angle of its branches in real time by turning the mouse wheel.
+## Screenshots
 ### Sierpiński&#39;s triangle
-![1](https://github.com/user-attachments/assets/1f8f9cc8-14e5-4d9e-9cdb-7b2feea3cd59)
+<img width="500" height="500" alt="screenshot000" src="https://github.com/user-attachments/assets/97e93be9-df02-44e9-8180-f9144c4e0642" />
 ### Barnsley&#39;s Fern
-![2](https://github.com/user-attachments/assets/170447a9-59ef-4e9b-89de-c56bc0ef453a)
-## Compiling
-To build with MinGW (GCC), use this commands:
+<img width="500" height="500" alt="screenshot001" src="https://github.com/user-attachments/assets/09349c34-a002-4915-87b7-d0692d10b7fd" />
+### Pythagoras' tree
+<img width="500" height="500" alt="screenshot002" src="https://github.com/user-attachments/assets/9c73af78-dc9d-48b1-a1e0-8527c1ab5b37" />
+## Compiling from source
 ```
-cmake -B build -S . -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+cmake -S . -B build
 cmake --build build
 ```
